@@ -39,6 +39,7 @@ services:
       - SMTP_PASSWORD
       - MAIL_FROM_ADDRESS
       - MAIL_DOMAIN
+      - NC_overwriteprotocol=https
     depends_on:
       - db
       - redis
