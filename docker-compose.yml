@@ -48,6 +48,9 @@ services:
     restart: always
     volumes:
       - nextcloud:/var/www/html:ro
+      - apps:/var/www/html/custom_apps:ro
+      - config:/var/www/html/config:ro
+      - data:/var/www/html/data:ro
     environment:
       - VIRTUAL_HOST
       - LETSENCRYPT_HOST
