@@ -1,0 +1,104 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:12.3
+    restart: always
+    volumes:
+      - db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+
+  redis:
+    image: redis:6.0.5
+    restart: always
+
+  app:
+    build: ./app
+    restart: always
+    volumes:
+      - nextcloud:/var/www/html
+      - apps:/var/www/html/custom_apps
+      - config:/var/www/html/config
+      - data:/var/www/html/data
+    environment:
+      - POSTGRES_HOST=db
+      - POSTGRES_DB
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+      - REDIS_HOST=redis
+      - NEXTCLOUD_ADMIN_USER
+      - NEXTCLOUD_ADMIN_PASSWORD
+      - NEXTCLOUD_TRUSTED_DOMAINS
+      - SMTP_HOST
+      - SMTP_SECURE
+      - SMTP_PORT
+      - SMTP_NAME
+      - SMTP_PASSWORD
+      - MAIL_FROM_ADDRESS
+      - MAIL_DOMAIN
+    depends_on:
+      - db
+      - redis
+
+  web:
+    build: ./web
+    restart: always
+    volumes:
+      - nextcloud:/var/www/html:ro
+    environment:
+      - VIRTUAL_HOST
+      - LETSENCRYPT_HOST
+      - LETSENCRYPT_EMAIL
+    depends_on:
+      - app
+    networks:
+      - proxy-tier
+      - default
+
+  proxy:
+    build: ./proxy
+    init: true  # Workaround for generate-dhparam becoming a zombie process (https://github.com/nginx-proxy/nginx-proxy/issues/1161)
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    labels:
+      com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy: "true"
+    volumes:
+      - certs:/etc/nginx/certs:ro
+      - vhost.d:/etc/nginx/vhost.d
+      - html:/usr/share/nginx/html
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+    networks:
+      - proxy-tier
+
+  letsencrypt-companion:
+    image: jrcs/letsencrypt-nginx-proxy-companion
+    restart: always
+    volumes:
+      - certs:/etc/nginx/certs
+      - vhost.d:/etc/nginx/vhost.d
+      - html:/usr/share/nginx/html
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      - DEFAULT_EMAIL
+    networks:
+      - proxy-tier
+    depends_on:
+      - proxy
+
+volumes:
+  db:
+  nextcloud:
+  apps:
+  config:
+  data:
+  certs:
+  vhost.d:
+  html:
+
+networks:
+  proxy-tier:
