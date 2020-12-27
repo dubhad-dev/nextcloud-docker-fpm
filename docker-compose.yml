@@ -10,11 +10,15 @@ services:
       - POSTGRES_DB
       - POSTGRES_USER
       - POSTGRES_PASSWORD
+    networks:
+      - default
 
   redis:
     image: redis:6.0.9
     command: redis-server --requirepass "${REDIS_HOST_PASSWORD}"
     restart: always
+    networks:
+      - default
 
   app:
     build: ./app
@@ -42,6 +46,8 @@ services:
       - MAIL_FROM_ADDRESS
       - MAIL_DOMAIN
       - NC_overwriteprotocol=https
+    networks:
+      - default
     depends_on:
       - db
       - redis
@@ -58,6 +64,9 @@ services:
       - VIRTUAL_HOST
       - LETSENCRYPT_HOST
       - LETSENCRYPT_EMAIL
+    networks:
+      - default
+      - proxy
     depends_on:
       - app
 
@@ -69,6 +78,6 @@ volumes:
   data:
 
 networks:
-  default:
+  proxy:
     external:
       name: nginx-proxy
