@@ -12,7 +12,7 @@ services:
       - POSTGRES_PASSWORD
 
   redis:
-    image: redis:6.0.8
+    image: redis:6.0.9
     command: redis-server --requirepass "${REDIS_HOST_PASSWORD}"
     restart: always
 
