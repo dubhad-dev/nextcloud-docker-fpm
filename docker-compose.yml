@@ -46,6 +46,7 @@ services:
       - MAIL_FROM_ADDRESS
       - MAIL_DOMAIN
       - NC_overwriteprotocol=https
+      - NC_default_phone_region=US
     networks:
       - default
     depends_on:
