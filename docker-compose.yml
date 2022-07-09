@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   db:
-    image: postgres:12.10
+    image: postgres:12.11
     restart: always
     volumes:
       - db:/var/lib/postgresql/data
@@ -14,7 +14,7 @@ services:
       - default
 
   redis:
-    image: redis:6.2.6
+    image: redis:7.0.2
     command: redis-server --requirepass "${REDIS_HOST_PASSWORD}"
     restart: always
     networks:
